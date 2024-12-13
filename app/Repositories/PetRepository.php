@@ -11,14 +11,26 @@ class PetRepository
 
     public function getAvailablePets()
     {
+        $cacheKey = 'available_pets';
+    
+        try {
             $response = Http::timeout(5)->get("{$this->baseUrl}/findByStatus", ['status' => 'available']);
-
+    
             if ($response->failed()) {
                 throw new \Exception('Failed to fetch data from the API.');
             }
-
+    
+            Cache::put($cacheKey, $response->json(), now()->addMinutes(60));
+    
             return $response->json();
-      
+            
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            if ($this->isCacheAvailable($cacheKey)) {
+                return Cache::get($cacheKey);
+            }
+    
+            throw new \Exception('Request timed out, and no cached data is available.');
+        }
     }
 
     public function addPet(array $data)
@@ -32,9 +44,11 @@ class PetRepository
         return $response->json();
     }
 
-    public function updatePet($petId, array $data)
+    public function updatePet(array $data)
     {
-        $response = Http::timeout(5)->put("{$this->baseUrl}/{$petId}", $data);
+        $response = Http::timeout(5)->put("{$this->baseUrl}/", $data);
+
+        echo $response->status();
 
         if ($response->failed()) {
             throw new \Exception('Failed to update pet.');
@@ -53,4 +67,11 @@ class PetRepository
 
         return $response->json();
     }
+
+
+    protected function isCacheAvailable($cacheKey)
+    {
+        return Cache::has($cacheKey);
+    }
 }
+

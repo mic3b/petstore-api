@@ -18,7 +18,7 @@ class PetService
     {
      
         $validator = Validator::make($data, [
-            'id' => 'integer',
+            'id' => 'required|integer',
             'name' => 'required|string|max:255',
             'photoUrls' => 'required|array|min:1',
             'photoUrls.*' => 'url', 
@@ -29,6 +29,8 @@ class PetService
             throw new ValidationException($validator);
         }
     }
+
+   
 
     public function getAvailablePets()
     {
@@ -42,11 +44,11 @@ class PetService
         return $this->petRepository->addPet($data);
     }
 
-    public function updatePet($petId, array $data)
+    public function updatePet( array $data)
     {
         $this->validatePetData($data);
 
-        return $this->petRepository->updatePet($petId, $data);
+        return $this->petRepository->updatePet( $data);
     }
 
     public function deletePet($petId)

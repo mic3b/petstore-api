@@ -5,23 +5,12 @@
 </head>
 <body>
     <h1>Edytuj Zwierzę</h1>
-    <form action="{{ route('pets.update', $pet['id']) }}" method="POST">
+    <form action="{{ route('pets.update',$pet['id']) }}" method="POST">
         @csrf
-        @method('PUT')
+        @method('PATCH')
 
         <label for="name">Nazwa Zwierzęcia:</label>
         <input type="text" name="name" id="name" value="{{ old('name', $pet['name']) }}" required><br>
-
-        <label for="category_name">Kategoria:</label>
-        <input type="text" name="category[name]" id="category_name" value="{{ old('category.name', $pet['category']['name']) }}" required><br>
-
-        <label for="photoUrls">URL Zdjęcia:</label>
-        <input type="text" name="photoUrls[]" value="{{ old('photoUrls[0]', $pet['photoUrls'][0]) }}" required><br>
-
-        <label for="tags">Tagi:</label>
-        @foreach($pet['tags'] as $index => $tag)
-            <input type="text" name="tags[{{ $index }}][name]" value="{{ old('tags.' . $index . '.name', $tag['name']) }}" required><br>
-        @endforeach
 
         <label for="status">Status:</label>
         <select name="status" id="status" required>

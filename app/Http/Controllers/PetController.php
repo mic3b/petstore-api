@@ -19,11 +19,7 @@ class PetController extends Controller
     {
         try {
             $pets = $this->petService->getAvailablePets();
-            // echo '<pre>';
-            // foreach ($pets as $pet) {
-            //     echo $pet['name'] . "\n";
-            // }
-            // echo '</pre>';
+   
             return view('pets.index', compact('pets'));
         } catch (\Exception $e) {
             return response()->json(['error' => 'Unable to fetch pets: ' . $e->getMessage()], 500);
@@ -38,20 +34,9 @@ class PetController extends Controller
     public function store(Request $request)
     {
         try {
-            // $petData = $request->validate([
-            //     'name' => 'required|string|max:255',
-            //     'category' => 'required',
-            //     'category.id' => 'required|integer',
-            //     'category.name' => 'required|string|max:255',
-            //     'photoUrls' => 'required|array|min:1',
-            //     'photoUrls.*' => 'required|url',
-            //     'tags' => 'optional|array|min:1',
-            //     'tags.*.id' => 'optional|integer',
-            //     'tags.*.name' => 'required|string|max:255',
-            //     'status' => 'required|string|in:available,pending,sold',
-            // ]);
             $data = array_merge([
-                'id' => 0,
+                //In my opinion API is broken, I can only pet with id = 9223372036854775807. which is being deleted after each request, setting id to random value solves the problem
+                'id' => rand(1, 99999999999999999),
                 'name' => 'default_name',
                 'photoUrls' => ['default_url'],
                 'status' => 'available',
@@ -67,20 +52,13 @@ class PetController extends Controller
                 ]
             ], $request->all());
 
-            echo '<pre>';
-            print_r($data);
-            echo '</pre>';
-
-            $petData = $request->all();
+            $petData = $data;
 
             $pet = $this->petService->addPet($petData);
+
             return redirect()->route('pets.index')->with('success', 'Zwierzę dodane pomyślnie');
         } catch (\Illuminate\Validation\ValidationException $e) {
-           
-            // return back()->withErrors($e->errors())->withInput();
-            echo '<pre>';
-            print_r($e->errors());
-            echo '</pre>';
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to add pet: ' . $e->getMessage()], 500);
         }
@@ -89,8 +67,7 @@ class PetController extends Controller
     public function edit($petId)
     {
         try {
-            $pet = $this->petService->getAvailablePets();
-            $pet = collect($pet)->firstWhere('id', $petId);
+            $pet = $this->petService->getPetById($petId);
 
             return view('pets.edit', compact('pet'));
         } catch (\Exception $e) {
@@ -101,19 +78,17 @@ class PetController extends Controller
     public function update(Request $request, $petId)
     {
         try {
-            $petData = $request->validate([
-                'name' => 'required|string|max:255',
-                'photoUrls' => 'required|array|min:1',
-                'photoUrls.*' => 'url',
-                'status' => 'required|string|in:available,pending,sold',
-            ]);
+            $data = $request->all();
+            $data['id'] = $petId;
+            $pet = $this->petService->getPetById($petId);
 
-         
+            $req_data = array_merge($pet, $data);
 
-            $this->petService->updatePet($petId, $petData);
+            $this->petService->updatePet($req_data);
             return redirect()->route('pets.index')->with('success', 'Zwierzę zostało zaktualizowane');
         } catch (\Exception $e) {
             return back()->withErrors($e->getMessage());
+            echo $e->getMessage();
         }
     }
 

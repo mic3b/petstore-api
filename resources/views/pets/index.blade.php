@@ -28,11 +28,11 @@
                 <td>
                     <a href="{{ route('pets.show', $pet['id']) }}">Pokaż</a> |
                     <a href="{{ route('pets.edit', $pet['id']) }}">Edytuj</a> |
-                    <!-- <form action="{{ route('pets.destroy', $pet['id']) }}" method="POST" style="display:inline;">
+                    <form action="{{ route('pets.destroy', $pet['id']) }}" method="POST" style="display:inline;">
                         @csrf
                         @method('DELETE')
                         <button type="submit">Usuń</button>
-                    </form> -->
+                    </form>
                 </td>
             </tr>
             @endforeach
